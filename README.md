@@ -36,6 +36,6 @@ for data in data_list:
 ```
 ### Result
 
-* Obama images are from [DiffAug](https://github.com/mit-han-lab/data-efficient-gans)
+* Images are from [DiffAug](https://github.com/mit-han-lab/data-efficient-gans)
 
 ![grid_obama](https://user-images.githubusercontent.com/23406491/138026142-dba459d0-250d-4a69-9b4b-2989a77b05ce.png)
