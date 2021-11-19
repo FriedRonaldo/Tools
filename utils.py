@@ -4,10 +4,12 @@ import cv2
 import numpy as np
 
 
-def concat_img_indir(path, is_vertical=False):
+def concat_img_indir(path, num_imgs=None, is_vertical=False, resize=None):
     """
-    :param path: a directory containing images to concatenate
-    :param is_vertical: if True, concatenate along height
+    :param path: (iterable) a directory containing images to concatenate
+    :param num_imgs: (int) if specified, concat first "num_imgs" images only.
+    :param is_vertical: (bool) if True, concatenate along height
+    :param resize: (int) if not None, all the images will be resized to "(resize, resize)"
     :return: a concatenated image
     Example:
     prefix = './photo2ukiyoe/'
@@ -25,7 +27,8 @@ def concat_img_indir(path, is_vertical=False):
     """
     img_dir_list = sorted(glob(os.path.join(path, '*.png'))) + sorted(glob(os.path.join(path, '*.jpg')))
 
-    img_dir_list = img_dir_list
+    if num_imgs is not None:
+        img_dir_list = img_dir_list[:num_imgs]
 
     if len(img_dir_list) <= 0:
         return None
@@ -36,7 +39,11 @@ def concat_img_indir(path, is_vertical=False):
     for img_dir in img_dir_list:
         img_ = cv2.imread(img_dir)
 
-        img_ = cv2.resize(img_, (128, 128))
+        if img_ is None:
+            continue
+
+        if resize is not None:
+            img_ = cv2.resize(img_, (resize, resize))
 
         if result is None:
             result = img_.copy()
@@ -46,9 +53,14 @@ def concat_img_indir(path, is_vertical=False):
     return result
 
 
-def transpose_image(img, img_size, num_rows, num_cols):
+def transpose_image(img, img_size):
     # assume that the padding is zero (no padding)
     img_sep = []
+
+    h, w, c = img.shape
+
+    num_rows, num_cols = h // img_size, w // img_size
+
     for r in range(num_rows):
         for c in range(num_cols):
             tmp = img[r * img_size: (r + 1) * img_size, c * img_size: (c + 1) * img_size, :]
@@ -67,7 +79,7 @@ def select_images(img_tot, idx_to_pick, img_size):
     res = []
 
     num_imgs = img_tot.shape[1] // img_size
-    print(num_imgs)
+
     for i in range(num_imgs):
         if i in idx_to_pick:
             res.append(img_tot[:, i * img_size: (i + 1) * img_size, :])
@@ -104,5 +116,4 @@ def concat_gridshape(img_list, num_scales=3):
         img_cnt += num_img_at_scale
 
     return res
-
 
