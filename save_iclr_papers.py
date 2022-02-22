@@ -1,3 +1,5 @@
+# Ex) python save_iclr_papers.py --keywords gan,generative --res_dir ICLR2022 --presentation_type Oral
+
 import argparse
 from tqdm import tqdm
 import os
