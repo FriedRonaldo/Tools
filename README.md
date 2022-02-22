@@ -92,7 +92,8 @@ cv2.imwrite(os.path.join(res_dir, 'concat_img_indir_10_vertical_128_ex.png'), co
 
 ### Result
 
-* Images are from [DiffAug](https://github.com/mit-han-lab/data-efficient-gans)
+* Images are from [DiffAug](https://github.com/mit-han-lab/data-efficient-gans).
+
 Because I copied the images to conduct a 5-scale grid-shaped concatenation, the image below contains an image multiple times.
 
 ![concat_img_indir_10_ex](https://user-images.githubusercontent.com/23406491/142562463-74a3ea67-6748-42f0-937a-3dbbb8f84459.png)
