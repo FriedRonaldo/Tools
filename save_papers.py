@@ -1,4 +1,5 @@
 # ex) python save_papers.py --keywords generative,gan --conference ICCV2021
+# ex) python save_papers.py --keywords lower --conference NeurIPS2021
 import argparse
 from tqdm import tqdm
 import os
@@ -37,20 +38,23 @@ def search_on_CVF(args):
 
 
 # presentation_type, keyword_to_search
-def search_on_ICLR(args):
+def search_on_openreview(args):
     presentation_type_limited = ['Poster', 'Oral', 'Spotlight', 'Submitted', 'Accepted']
     assert args.presentation_type in presentation_type_limited
     assert type(args.keywords) == tuple
 
     search_type = presentation_type_limited[:3] if args.presentation_type == 'Accepted' else [args.presentation_type]
 
+    year = args.conference[-4:]
+    venue = args.conference[:-4]
+
     results = []
 
     for search_type_each in search_type:
 
-        url = 'https://api.openreview.net/notes?content.venue=ICLR+2022+{}' \
+        url = 'https://api.openreview.net/notes?content.venue={}+{}+{}' \
               '&details=replyCount&offset=0&limit=5000' \
-              '&invitation=ICLR.cc%2F2022%2FConference%2F-%2FBlind_Submission'.format(search_type_each)
+              '&invitation={}.cc%2F{}%2FConference%2F-%2FBlind_Submission'.format(venue, year, search_type_each, venue, year)
 
         header = {
             "authority": "api.openreview.net",
@@ -100,7 +104,7 @@ def search_on_ICLR(args):
 
 
 def save_as_pdf_files(args, conference_type, list_of_papers):
-    url_prefix_dict = {'cvf': 'https://openaccess.thecvf.com', 'iclr': 'https://openreview.net'}
+    url_prefix_dict = {'cvf': 'https://openaccess.thecvf.com', 'openreview': 'https://openreview.net'}
     url_prefix = url_prefix_dict[conference_type.lower()]
 
     save_dir = os.path.join('./', args.res_dir, args.keywords_as_str)
@@ -136,7 +140,7 @@ args.keywords = tuple(args.keywords.split(","))
 
 cvf_dict = ['ICCV', 'CVPR', 'WACV', 'ACCV']
 
-conference_type = 'iclr'
+conference_type = 'openreview'
 for cvf in cvf_dict:
     if cvf in args.conference:
         conference_type = 'cvf'
@@ -144,6 +148,6 @@ for cvf in cvf_dict:
 if conference_type == 'cvf':
     res = search_on_CVF(args)
 else:
-    res = search_on_ICLR(args)
+    res = search_on_openreview(args)
 
 save_as_pdf_files(args, conference_type, res)
