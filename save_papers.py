@@ -1,9 +1,40 @@
-# Ex) python save_iclr_papers.py --keywords gan,generative --res_dir ICLR2022 --presentation_type Oral
-
+# ex) python save_ICLR_papers.py --keywords generative --conference ICCV2021
 import argparse
 from tqdm import tqdm
 import os
 import requests
+from bs4 import BeautifulSoup
+
+
+def search_on_CVF(args):
+    assert type(args.keywords) == tuple
+    results = []
+
+    url = 'https://openaccess.thecvf.com/{}?day=all'.format(args.conference)
+
+    r = requests.get(url=url)
+
+    bs = BeautifulSoup(r.text, 'lxml')
+
+    paper_list = bs.find_all('dt', {'class': 'ptitle'})
+
+    count = 0
+    for paper_title in paper_list:
+        for keyword in args.keywords:
+            if keyword.lower() in paper_title.text.lower():
+                split_href = paper_title.a['href'].split('/')
+                split_href[3] = 'papers'
+                href = '/'.join(split_href)
+                href = href[:-4] + 'pdf'
+                results.append((paper_title.text, href))
+                count += 1
+                break
+    print('================================')
+    print("FOUND [{}] papers with [{}] in [{}]".format(count, args.keywords, args.conference))
+    print('================================')
+
+    return results
+
 
 # presentation_type, keyword_to_search
 def search_on_ICLR(args):
@@ -68,14 +99,15 @@ def search_on_ICLR(args):
     return results
 
 
-def save_ICLR_as_pdf_files(args, list_of_papers):
-    save_dir = os.path.join('./', args.res_dir, args.keywords_as_str)
+def save_as_pdf_files(args, conference_type, list_of_papers):
+    url_prefix_dict = {'cvf': 'https://openaccess.thecvf.com', 'iclr': 'https://openreview.net'}
+    url_prefix = url_prefix_dict[conference_type.lower()]
 
+    save_dir = os.path.join('./', args.res_dir, args.keywords_as_str)
     print("PDFs will be saved in", save_dir)
 
     os.makedirs(save_dir, exist_ok=True)
 
-    url_prefix = 'https://openreview.net'
     for paper in tqdm(list_of_papers):
         url_paper = url_prefix + paper[1]
         filename = os.path.join(save_dir, paper[0]+'.pdf')
@@ -91,15 +123,27 @@ def save_ICLR_as_pdf_files(args, list_of_papers):
 
 parser = argparse.ArgumentParser(description='Conference paper save module')
 parser.add_argument('--keywords')
-parser.add_argument('--res_dir', default='ICLR')
+parser.add_argument('--conference', default='ICCV2021')
 parser.add_argument('--presentation_type', default='Accepted', choices=['Poster', 'Oral', 'Spotlight', 'Submitted', 'Accepted'])
 
 args = parser.parse_args()
+
+args.res_dir = args.conference
 
 args.keywords_as_str = args.keywords
 
 args.keywords = tuple(args.keywords.split(","))
 
-res = search_on_ICLR(args)
+cvf_dict = ['ICCV', 'CVPR', 'WACV', 'ACCV']
 
-save_ICLR_as_pdf_files(args, res)
+conference_type = 'iclr'
+for cvf in cvf_dict:
+    if cvf in args.conference:
+        conference_type = 'cvf'
+
+if conference_type == 'cvf':
+    res = search_on_CVF(args)
+else:
+    res = search_on_ICLR(args)
+
+save_as_pdf_files(args, conference_type, res)
