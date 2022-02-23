@@ -1,4 +1,4 @@
-# ex) python save_papers.py --keywords generative --conference ICCV2021
+# ex) python save_papers.py --keywords generative,gan --conference ICCV2021
 import argparse
 from tqdm import tqdm
 import os
